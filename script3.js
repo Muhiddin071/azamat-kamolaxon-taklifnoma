@@ -651,4 +651,81 @@ styleDynamic.textContent = `
 `;
 
 document.head.appendChild(styleDynamic);
+
+
+// ==================== FLOWER PETALS GENERATOR ====================
+
+function initPetals() {
+  const container = document.getElementById('petalsContainer');
+  if (!container) return;
+
+  const maxPetals = 45; // Maximum active petals on screen
+  let activePetals = 0;
+
+  function createPetal() {
+    if (activePetals >= maxPetals) return;
+
+    const petal = document.createElement('div');
+    petal.className = 'petal';
+    
+    // Randomize petal type (pink, lavender, gold, white-pink)
+    const type = Math.floor(Math.random() * 4) + 1;
+    petal.classList.add(`type-${type}`);
+
+    // Randomize size
+    const size = Math.floor(Math.random() * 16) + 12; // 12px to 28px
+    petal.style.width = `${size}px`;
+    petal.style.height = `${size * 1.25}px`;
+
+    // Decide starting side (Left or Right)
+    const startFromLeft = Math.random() > 0.5;
+
+    // Randomize starting positions along the screen edges
+    if (startFromLeft) {
+      // Start near left edge (between -5% and 15% width, and -10% and 35% height)
+      petal.style.left = `${Math.random() * 20 - 5}%`;
+      petal.style.top = `${Math.random() * 45 - 10}%`;
+      
+      // Assign left-to-right drift animation
+      const duration = Math.random() * 5 + 8; // 8s to 13s
+      const delay = Math.random() * 3;
+      petal.style.animation = `drift-left-to-right ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
+    } else {
+      // Start near right edge (between 85% and 105% width, and -10% and 35% height)
+      petal.style.left = `${Math.random() * 20 + 85}%`;
+      petal.style.top = `${Math.random() * 45 - 10}%`;
+      
+      // Assign right-to-left drift animation
+      const duration = Math.random() * 5 + 8; // 8s to 13s
+      const delay = Math.random() * 3;
+      petal.style.animation = `drift-right-to-left ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
+    }
+
+    container.appendChild(petal);
+    activePetals++;
+
+    // Calculate total animation time (duration + delay) in milliseconds to clean up the DOM element
+    const totalTimeMs = (duration + delay) * 1000;
+    
+    setTimeout(() => {
+      petal.remove();
+      activePetals--;
+    }, totalTimeMs);
+  }
+
+  // Initial batch of petals with random staggered delays
+  for (let i = 0; i < 18; i++) {
+    setTimeout(createPetal, Math.random() * 6000);
+  }
+
+  // Periodically spawn new petals
+  setInterval(createPetal, 350);
+}
+
+// Start generating petals after DOM content is loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPetals);
+} else {
+  initPetals();
+}
 
