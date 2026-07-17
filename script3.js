@@ -662,53 +662,85 @@ function initPetals() {
   const maxPetals = 45; // Maximum active petals on screen
   let activePetals = 0;
 
+  // Scroll tracking variables
+  let lastScrollY = window.scrollY;
+  let scrollSpeed = 0;
+  let targetScrollSpeed = 0;
+
+  // Listen to scroll events to apply wind effect and depth parallax
+  window.addEventListener('scroll', () => {
+    const currentScrollY = window.scrollY;
+    const delta = currentScrollY - lastScrollY;
+    lastScrollY = currentScrollY;
+
+    // Set scroll wind target speed (cap it to prevent extreme values)
+    targetScrollSpeed = Math.max(-30, Math.min(30, delta * 0.15));
+
+    // Update vertical scroll offset variable for 3D parallax
+    container.style.setProperty('--scroll-y-offset', `${currentScrollY * -0.15}px`);
+  });
+
+  // Animation frame loop to smoothly interpolate and decay scroll wind/tilt
+  function updateScrollEffects() {
+    scrollSpeed += (targetScrollSpeed - scrollSpeed) * 0.1;
+    targetScrollSpeed *= 0.9; // decay target speed
+
+    container.style.setProperty('--scroll-wind', `${scrollSpeed * 0.8}px`);
+    container.style.setProperty('--scroll-tilt', `${scrollSpeed * 0.15}deg`);
+
+    requestAnimationFrame(updateScrollEffects);
+  }
+  requestAnimationFrame(updateScrollEffects);
+
   function createPetal() {
     if (activePetals >= maxPetals) return;
 
+    // Create wrapper (which will follow the falling trajectory path)
+    const wrapper = document.createElement('div');
+    wrapper.className = 'petal-wrapper';
+
+    // Create inner petal (which will react to scroll movements)
     const petal = document.createElement('div');
     petal.className = 'petal';
-    
+
     // Randomize petal type (pink, lavender, gold, white-pink)
     const type = Math.floor(Math.random() * 4) + 1;
     petal.classList.add(`type-${type}`);
 
     // Randomize size
     const size = Math.floor(Math.random() * 16) + 12; // 12px to 28px
-    petal.style.width = `${size}px`;
-    petal.style.height = `${size * 1.25}px`;
+    wrapper.style.width = `${size}px`;
+    wrapper.style.height = `${size * 1.25}px`;
+
+    // Randomize depth factor for parallax depth (0.4 to 1.6)
+    const depthFactor = (Math.random() * 1.2 + 0.4).toFixed(2);
+    petal.style.setProperty('--depth-factor', depthFactor);
 
     // Decide starting side (Left or Right)
     const startFromLeft = Math.random() > 0.5;
 
     // Randomize starting positions along the screen edges
+    const duration = Math.random() * 5 + 8; // 8s to 13s
+    const delay = Math.random() * 3;
+
     if (startFromLeft) {
-      // Start near left edge (between -5% and 15% width, and -10% and 35% height)
-      petal.style.left = `${Math.random() * 20 - 5}%`;
-      petal.style.top = `${Math.random() * 45 - 10}%`;
-      
-      // Assign left-to-right drift animation
-      const duration = Math.random() * 5 + 8; // 8s to 13s
-      const delay = Math.random() * 3;
-      petal.style.animation = `drift-left-to-right ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
+      wrapper.style.left = `${Math.random() * 20 - 5}%`;
+      wrapper.style.top = `${Math.random() * 45 - 10}%`;
+      wrapper.style.animation = `drift-left-to-right ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
     } else {
-      // Start near right edge (between 85% and 105% width, and -10% and 35% height)
-      petal.style.left = `${Math.random() * 20 + 85}%`;
-      petal.style.top = `${Math.random() * 45 - 10}%`;
-      
-      // Assign right-to-left drift animation
-      const duration = Math.random() * 5 + 8; // 8s to 13s
-      const delay = Math.random() * 3;
-      petal.style.animation = `drift-right-to-left ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
+      wrapper.style.left = `${Math.random() * 20 + 85}%`;
+      wrapper.style.top = `${Math.random() * 45 - 10}%`;
+      wrapper.style.animation = `drift-right-to-left ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
     }
 
-    container.appendChild(petal);
+    wrapper.appendChild(petal);
+    container.appendChild(wrapper);
     activePetals++;
 
-    // Calculate total animation time (duration + delay) in milliseconds to clean up the DOM element
     const totalTimeMs = (duration + delay) * 1000;
     
     setTimeout(() => {
-      petal.remove();
+      wrapper.remove();
       activePetals--;
     }, totalTimeMs);
   }

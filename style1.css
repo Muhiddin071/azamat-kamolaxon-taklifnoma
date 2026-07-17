@@ -2352,14 +2352,33 @@ h1 {
   pointer-events: none;
   z-index: 999;
   overflow: hidden;
+  /* CSS variables initialized */
+  --scroll-y-offset: 0px;
+  --scroll-wind: 0px;
+  --scroll-tilt: 0deg;
 }
 
-.petal {
+/* The wrapper handles the primary falling/drifting animation path */
+.petal-wrapper {
   position: absolute;
   pointer-events: none;
   opacity: 0;
   transform-origin: center;
   will-change: transform, opacity;
+}
+
+/* The inner petal handles the scroll reactive parallax, wind shift, and tilt */
+.petal {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform-origin: center;
+  transform: translate3d(
+    calc(var(--scroll-wind, 0px) * var(--depth-factor, 1)), 
+    calc(var(--scroll-y-offset, 0px) * var(--depth-factor, 1)), 
+    0
+  ) rotate(calc(var(--scroll-tilt, 0deg) * var(--depth-factor, 1)));
+  will-change: transform;
 }
 
 /* 4 visual varieties of petals */
