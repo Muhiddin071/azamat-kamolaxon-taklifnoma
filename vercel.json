@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "music/**", "use": "@vercel/static" },
+    { "src": "style1.css", "use": "@vercel/static" },
+    { "src": "script3.js", "use": "@vercel/static" },
+    { "src": "config.js", "use": "@vercel/static" },
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "*.png", "use": "@vercel/static" },
+    { "src": "*.webp", "use": "@vercel/static" }
+  ]
+}
