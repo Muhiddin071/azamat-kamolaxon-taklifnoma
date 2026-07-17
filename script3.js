@@ -659,7 +659,7 @@ function initPetals() {
   const container = document.getElementById('petalsContainer');
   if (!container) return;
 
-  const maxPetals = 45; // Maximum active petals on screen
+  const maxPetals = 40; // Maximum active petals on screen to maintain 60fps
   let activePetals = 0;
 
   // Scroll tracking variables
@@ -682,8 +682,8 @@ function initPetals() {
 
   // Animation frame loop to smoothly interpolate and decay scroll wind/tilt
   function updateScrollEffects() {
-    scrollSpeed += (targetScrollSpeed - scrollSpeed) * 0.1;
-    targetScrollSpeed *= 0.9; // decay target speed
+    scrollSpeed += (targetScrollSpeed - scrollSpeed) * 0.08;
+    targetScrollSpeed *= 0.88; // decay target speed
 
     container.style.setProperty('--scroll-wind', `${scrollSpeed * 0.8}px`);
     container.style.setProperty('--scroll-tilt', `${scrollSpeed * 0.15}deg`);
@@ -699,7 +699,11 @@ function initPetals() {
     const wrapper = document.createElement('div');
     wrapper.className = 'petal-wrapper';
 
-    // Create inner petal (which will react to scroll movements)
+    // Create swayer (which will sway horizontally back and forth like a leaf in the wind)
+    const swayer = document.createElement('div');
+    swayer.className = 'petal-swayer';
+
+    // Create inner petal (which will react to scroll and spin in 3D)
     const petal = document.createElement('div');
     petal.className = 'petal';
 
@@ -719,21 +723,35 @@ function initPetals() {
     // Decide starting side (Left or Right)
     const startFromLeft = Math.random() > 0.5;
 
-    // Randomize starting positions along the screen edges
-    const duration = Math.random() * 5 + 8; // 8s to 13s
+    // Trajectory fall duration
+    const duration = Math.random() * 5 + 9; // 9s to 14s
     const delay = Math.random() * 3;
 
+    // Sway duration (periodic back & forth swing)
+    const swayDuration = Math.random() * 2 + 3.5; // 3.5s to 5.5s
+    const swayDelay = Math.random() * 2;
+
+    // 3D Flip duration
+    const flipDuration = Math.random() * 3 + 6; // 6s to 9s
+    const flipDelay = (Math.random() * -10).toFixed(2); // Negative delay to desynchronize flips
+
+    // Apply 3D flip animation to petal
+    petal.style.animation = `leaf-flip ${flipDuration}s linear ${flipDelay}s infinite`;
+
     if (startFromLeft) {
-      wrapper.style.left = `${Math.random() * 20 - 5}%`;
-      wrapper.style.top = `${Math.random() * 45 - 10}%`;
-      wrapper.style.animation = `drift-left-to-right ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
+      wrapper.style.left = `${Math.random() * 25 - 5}%`; // -5% to 20%
+      wrapper.style.top = `${Math.random() * 40 - 10}%`; // -10% to 30%
+      wrapper.style.animation = `drift-lr ${duration}s linear ${delay}s infinite`;
+      swayer.style.animation = `sway-l ${swayDuration}s ease-in-out ${swayDelay}s infinite alternate`;
     } else {
-      wrapper.style.left = `${Math.random() * 20 + 85}%`;
-      wrapper.style.top = `${Math.random() * 45 - 10}%`;
-      wrapper.style.animation = `drift-right-to-left ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s infinite`;
+      wrapper.style.left = `${Math.random() * 25 + 80}%`; // 80% to 105%
+      wrapper.style.top = `${Math.random() * 40 - 10}%`; // -10% to 30%
+      wrapper.style.animation = `drift-rl ${duration}s linear ${delay}s infinite`;
+      swayer.style.animation = `sway-r ${swayDuration}s ease-in-out ${swayDelay}s infinite alternate`;
     }
 
-    wrapper.appendChild(petal);
+    swayer.appendChild(petal);
+    wrapper.appendChild(swayer);
     container.appendChild(wrapper);
     activePetals++;
 
@@ -745,7 +763,7 @@ function initPetals() {
     }, totalTimeMs);
   }
 
-  // Initial batch of petals with random staggered delays
+  // Initial batch of petals
   for (let i = 0; i < 18; i++) {
     setTimeout(createPetal, Math.random() * 6000);
   }
